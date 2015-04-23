@@ -60,9 +60,13 @@ float zeroWind_volts;
 float WindSpeed_MPH;
 
 // -Pushbutton vars-
-#define digitalPinPushbutton    1
+int digitalPinPushbutton = 1;
 boolean lcd_babydisplayP = true; // Should LCD display baby info?
-int buttonPush = 0; // var to read pin status
+int buttonPush; // var to read pin status
+
+unsigned long lcdMillis;
+unsigned long previousLcdMillis;
+int lcdSeconds;
 
 void setup(void) {
   Serial.begin(115200);
@@ -129,12 +133,11 @@ void loop(void) {
     numHallEffectChangesPerMin ++;
   }
   
+  // Hall effect timer
   hallEffectMillis = millis(); // Record time
-  
   if(hallEffectMillis - previousHallEffectMillis >= 1000){
     seconds  ++; // Increase seconds variable every second
     previousHallEffectMillis = hallEffectMillis;
-    
   }else{
     seconds = 0; // Reset seconds
   }
@@ -145,12 +148,28 @@ void loop(void) {
     seconds = 0;
     numHallEffectChangesPerMin = 0;
   }
+  
+  // LCD display timer
+  lcdMillis = millis();
+  if(lcdMillis - previousLcdMillis >= 1000){
+    lcdSeconds ++;
+    previousLcdMillis = lcdMillis;
+  }else{
+    lcdSeconds = 0;
+  }
+  // Once seconds reaches 20, switch display
+  if(lcdSeconds == 20){
+    lcd_babydisplayP = !lcd_babydisplayP;
+    lcdSeconds = 0;
+  }
 
+  /*
   buttonPush = digitalRead(digitalPinPushbutton);
   if(buttonPush == LOW){
     // btn pressed, switch boolean value
     lcd_babydisplayP = !lcd_babydisplayP;
-  }
+    digitalWrite(5, HIGH);
+  }*/
 
   if(lcd_babydisplayP == false){
     // TODO: Calculate MPH based on Hall FX instead of 13
@@ -161,6 +180,7 @@ void loop(void) {
   }
 
   // TODO: Replace LED blinking code below with warning light function
+  /*
   digitalWrite(5, LOW);
   digitalWrite(6, LOW);
   digitalWrite(7, LOW);
@@ -168,6 +188,7 @@ void loop(void) {
   digitalWrite(5, HIGH);
   digitalWrite(6, HIGH);
   digitalWrite(7, HIGH);
+  */
   delay(1000);
 
   if (DEBUG == true){
@@ -182,14 +203,14 @@ void loop(void) {
     Serial.print(" UV Intensity (mW/cm^2): ");
     Serial.print(uvIntensity);
   }
-
+  /*
   sendDataToProcessing('S', Signal);     // send Processing the raw Pulse Sensor data
   if (QS == true){                       // Quantified Self flag is true when arduino finds a heartbeat
     fadeRate = 255;                  // Set 'fadeRate' Variable to 255 to fade LED with pulse
     sendDataToProcessing('B',BPM);   // send heart rate with a 'B' prefix
     sendDataToProcessing('Q',IBI);   // send time between beats with a 'Q' prefix
     QS = false;                      // reset the Quantified Self flag for next time    
-  }
+  }*/
 
   ledFadeToBeat();
 }
@@ -320,6 +341,7 @@ int calcMPH(int RPM){
 
 // Switch to the baby's sensor display
 void baby(float tmp, float uv, float windspd){
+  lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print("TMP:");
   lcd.setCursor(4,0);
@@ -340,6 +362,7 @@ void baby(float tmp, float uv, float windspd){
 }
 // Switch to the parent's sensor display
 void parent(float time, float mph, float bpm){
+  lcd.clear();
   lcd.setCursor(0, 0);
   lcd.print(time);
   lcd.setCursor(5, 0);
