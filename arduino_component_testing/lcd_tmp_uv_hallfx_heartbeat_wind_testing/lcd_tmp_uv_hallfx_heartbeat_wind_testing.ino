@@ -60,7 +60,7 @@ float zeroWind_volts;
 float WindSpeed_MPH;
 
 // -Pushbutton vars-
-int digitalPinPushbutton = 1;
+int digitalPinPushbutton = 3;
 boolean lcd_babydisplayP = true; // Should LCD display baby info?
 int buttonPush; // var to read pin status
 
@@ -156,7 +156,7 @@ void loop(void) {
     seconds = 0;
     numHallEffectChangesPerMin = 0;
   }
-  
+  /*
   // LCD display timer
   lcdMillis = millis();
   if(lcdMillis - previousLcdMillis >= 1000){
@@ -169,6 +169,12 @@ void loop(void) {
   if(lcdSeconds == 20){
     lcd_babydisplayP = !lcd_babydisplayP;
     lcdSeconds = 0;
+  }*/
+  
+  // If button is pressed switch displays
+  buttonPush = digitalRead(digitalPinPushbutton);
+  if(buttonPush == HIGH){
+    lcd_babydisplayP = !lcd_babydisplayP;
   }
 
   if(lcd_babydisplayP == false){
