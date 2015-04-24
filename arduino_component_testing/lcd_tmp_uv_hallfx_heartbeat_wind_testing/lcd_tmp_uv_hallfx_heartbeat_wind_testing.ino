@@ -68,6 +68,14 @@ unsigned long lcdMillis;
 unsigned long previousLcdMillis;
 int lcdSeconds;
 
+//********************
+// Declare satefy vars
+//********************
+float TMP_WARN_HIGH = 95.0;
+float TMP_WARN_LOW = 38.0;
+float WIND_WARN = 15.0;
+float UV_WARN = 50.0;
+
 void setup(void) {
   Serial.begin(115200);
   //TODO: Investigate what below line is for:
@@ -163,14 +171,6 @@ void loop(void) {
     lcdSeconds = 0;
   }
 
-  /*
-  buttonPush = digitalRead(digitalPinPushbutton);
-  if(buttonPush == LOW){
-    // btn pressed, switch boolean value
-    lcd_babydisplayP = !lcd_babydisplayP;
-    digitalWrite(5, HIGH);
-  }*/
-
   if(lcd_babydisplayP == false){
     // TODO: Calculate MPH based on Hall FX instead of 13
     parent(millis()/1000, MPH, BPM);
@@ -179,17 +179,28 @@ void loop(void) {
     baby(temperature, abs(uvIntensity)*100.0, WindSpeedMPH);
   }
 
-  // TODO: Replace LED blinking code below with warning light function
-  /*
-  digitalWrite(5, LOW);
-  digitalWrite(6, LOW);
-  digitalWrite(7, LOW);
-  delay(1000);
-  digitalWrite(5, HIGH);
-  digitalWrite(6, HIGH);
-  digitalWrite(7, HIGH);
-  */
-  delay(1000);
+  // Check both high and low satefy levels for temp
+  if(temperature > TMP_WARN_HIGH){
+    warningLight(5, true);
+  }else if (temperature < TMP_WARN_LOW){
+    warningLight(5, true);
+  }else{
+    warningLight(5, false);
+  }
+  // Check safety levels for UV
+  if((abs(uvIntensity)*100.0) > UV_WARN){
+    warningLight(6, true);
+  }else{
+    warningLight(6, false);
+  }
+  // Check safety levels for wind
+  if(WindSpeedMPH < WIND_WARN){
+    warningLight(7, true);
+  }else{
+    warningLight(7, false);
+  }
+
+  delay(1000); // Wait a bit, helps refresh rate
 
   if (DEBUG == true){
     Serial.println(hallEffectReading);
@@ -212,6 +223,7 @@ void loop(void) {
     QS = false;                      // reset the Quantified Self flag for next time    
   }*/
 
+  //TODO: Delete this function?
   ledFadeToBeat();
 }
 
@@ -383,4 +395,12 @@ void parent(float time, float mph, float bpm){
 
   lcd.setCursor(11, 1);
   lcd.print("****");
+}
+
+void warningLight(int lightPin, boolean warning){
+  if(warning == true){
+    digitalWrite(lightPin, HIGH);
+  }else{
+    digitalWrite(lightPin, LOW);
+  }
 }
