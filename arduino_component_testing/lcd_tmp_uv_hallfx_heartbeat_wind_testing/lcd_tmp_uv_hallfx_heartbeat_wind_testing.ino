@@ -173,7 +173,7 @@ void loop(void) {
 
   if(lcd_babydisplayP == false){
     // TODO: Calculate MPH based on Hall FX instead of 13
-    parent(millis(), MPH, BPM);
+    parent(millis()/1000, MPH, BPM);
   }
   else{
     baby(temperature, abs(uvIntensity)*100.0, WindSpeedMPH);
@@ -367,15 +367,18 @@ void parent(float time, float mph, float bpm){
   lcd.print(time);
   lcd.setCursor(5, 0);
   lcd.print("s");
+  // FIXME: Next two lines temp fix intended to clear random 0's
+  lcd.setCursor(6, 0);
+  lcd.print("  ");
 
-  lcd.setCursor(10, 0);
+  lcd.setCursor(9, 0);
   lcd.print(mph);
-  lcd.setCursor(12,0);
+  lcd.setCursor(13,0);
   lcd.print("MPH");
 
   lcd.setCursor(0, 1);
   lcd.print(bpm);
-  lcd.setCursor(3, 1);
+  lcd.setCursor(4, 1);
   lcd.print("BPM");
 
   lcd.setCursor(11, 1);
