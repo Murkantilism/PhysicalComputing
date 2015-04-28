@@ -364,6 +364,8 @@ void baby(float tmp, float uv, float windspd){
   lcd.print("TMP:");
   lcd.setCursor(4,0);
   lcd.print(tmp);
+  lcd.setCursor(9,0);
+  lcd.print((char) 233);
 
   lcd.setCursor(10, 0);
   lcd.print("UV:");
